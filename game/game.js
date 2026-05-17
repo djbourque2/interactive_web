@@ -21,29 +21,30 @@ ybound = 750;
 //player dimensions
 var pWidth = 60;
 var pHeight = 60;
-var pFloatVal = 23;
+var pJump_Value = 23;
+var pSpawn_x = 200;
+var pSpawn_y = 650;
 
 var game_phys_objects = [];
-//var game_detector = Detector.create();
 var ground_collision_list = [];
 
 class Player {
-    constructor(){
-        this.body = Bodies.rectangle(200, 650, pWidth, pHeight, {inertia: Infinity, /*frictionAir: 0*/});
+    constructor(xSpawn, ySpawn){
+        this.body = Bodies.rectangle(xSpawn, ySpawn, pWidth, pHeight, {inertia: Infinity});
         Composite.add(engine.world, this.body);
-        this.float = 0;
-        //game_detector.bodies.push(this.body);
+        this.jump_time = 0;
     }
     movement(){
         let pos = this.body.position;
         for (let i = 0; i < ground_collision_list.length; i++) {
             if (Collision.collides(this.body, ground_collision_list[i]) != null){
-                this.float = pFloatVal;
+                this.jump_time = pJump_Value;
+                if (i != 0){
+                    let temp = ground_collision_list[0];
+                    ground_collision_list[0] = ground_collision_list[i];
+                    ground_collision_list[i] = temp;
+                }
                 break;
-                /*optimization oppertunity: 
-                before setting i to length, swap ground_collision_list[0] with g_c_l[i] 
-                to reduce number of loops when resting on a surface
-                */
             }
         }
 
@@ -55,20 +56,20 @@ class Player {
             Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x * 0.9, Body.getVelocity(this.body).y))
         }
         
-        if (keyIsDown(UP_ARROW) && (this.float > 0)){
-            if ((this.float != pFloatVal) && (Body.getVelocity(this.body).y == 0)){
-                this.float = 0;
+        if (keyIsDown(UP_ARROW) && (this.jump_time > 0)){
+            if ((this.jump_time != pJump_Value) && (Body.getVelocity(this.body).y == 0)){
+                this.jump_time = 0;
             }
-            Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x, this.float*-1));
+            Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x, this.jump_time*-1));
         } else {
-            this.float -= Math.abs(this.float);
+            this.jump_time -= Math.abs(this.jump_time);
         }
         
-        if (this.float == 0){
-            Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x, 1));
+        if (this.jump_time == 0){
+            Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x, 2));
         }
         
-        this.float -= 1;
+        this.jump_time -= 1;
     }
     show(){
         this.movement();
@@ -77,25 +78,24 @@ class Player {
         push();
         translate(pos.x, pos.y);
         rotate(angle);
-        if (this.float > 0){
+        if (this.jump_time >= -1){
             fill(color(255,0,0));
         }
-        rect(0, 0, 60, 60);
+        rect(0, 0, pWidth, pHeight);
         pop();
     }
 }
-var game_player = new Player();
+var game_player = new Player(pSpawn_x, pSpawn_y);
 
 class Platform {
-    constructor(player, x, y, w, h = 60){
+    constructor(x, y, w, h = 60){
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
-        this.player = player;
 
-        this.body = Bodies.rectangle(x, y, w, h, {isStatic: true});
-        this.body2 = Bodies.rectangle(x, y-(h/2), w-2, 2, {isStatic: true});//Collision detection slice
+        this.body = Bodies.rectangle(x, y, w, h, {isStatic: true, friction: 0});
+        this.body2 = Bodies.rectangle(x, y-(h/2), w-2, 5, {isStatic: true});//Collision detection slice
         Composite.add(engine.world, this.body);
         Composite.add(engine.world, this.body2);
         ground_collision_list.push(this.body2);
@@ -117,9 +117,10 @@ class Platform {
 
 // BUILDS THE MAP GEOMETRY
 game_phys_objects.push(
-    new Platform(game_player, xbound/2, ybound/2, xbound/2), 
-    new Platform(game_player, xbound*3/4, ybound*3/4, xbound/4),
-    new Platform(game_player, xbound/2, ybound+30, xbound, 60),//ground
+    new Platform(xbound/2, ybound/2, xbound/2), 
+    new Platform(xbound*3/4, ybound*3/4, xbound/4),
+    new Platform(xbound/4, ybound/4, xbound/2),
+    new Platform(xbound/2, ybound+30, xbound, 60),// bottom ground
 );
 
 /*tests
@@ -156,7 +157,7 @@ function setup() {
     //runner
 
     //test first
-    var leftwall = Bodies.rectangle(0, 0, 20, 1500, { isStatic: true });
+    var leftwall = Bodies.rectangle(0, 0, 20, 1500, { isStatic: true }); //map bounds
     var rightwall = Bodies.rectangle(xbound, 0, 20, 1500, { isStatic: true });
     Composite.add(engine.world, [leftwall, rightwall]);
 
