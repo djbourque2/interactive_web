@@ -30,17 +30,23 @@ var game_phys_objects = [];
 var ground_collision_list = [];
 
 var background_img;
+var player_sprite;
+var cloud_platform1;
+var cloud_platform2;
+var cloud_platform3;
 
 //img loading
 function preload(){
     background_img = loadImage('../img/interactive_game_assets_background.png');
     var player;
-    var platform;
+    cloud_platform1 = loadImage('../img/interactive_game_assets_cloud1.png');
+    cloud_platform2 = loadImage('../img/interactive_game_assets_cloud2.png');
+    cloud_platform3 = loadImage('../img/interactive_game_assets_cloud3.png');
 }
 
 class Player {
     constructor(xSpawn, ySpawn){
-        this.body = Bodies.rectangle(xSpawn, ySpawn, pWidth, pHeight, {/*inertia: Infinity*/});
+        this.body = Bodies.rectangle(xSpawn, ySpawn, pWidth, pHeight, {inertia: Infinity});
         this.body.friction = 0;
         Composite.add(engine.world, this.body);
         this.jump_time = 0;
@@ -103,11 +109,13 @@ class Player {
 }
 
 class Platform {
-    constructor(x, y, w, h = 60){
+    constructor(img, x, y, w, h = 60){
+        this.img = img;
         this.x = x;
         this.y = y;
         this.w = w;
         this.h = h;
+        this.y2 = y-(h/2);
 
         this.body = Bodies.rectangle(x, y, w, h, {isStatic: true, friction: 0});
         this.body2 = Bodies.rectangle(x, y-(h/2), w-2, 5, {isStatic: true});//Collision detection slice
@@ -119,14 +127,18 @@ class Platform {
 
     }
     show(){
-        var pos = this.body.position;
-        var angle = this.body.angle;
-
-        push();
-        translate(pos.x, pos.y);
-        rotate(angle);
-        rect(0, 0, this.w, this.h);
-        pop();
+        if (this.img != null){
+            var pos = this.body.position;
+            var angle = this.body.angle;
+            
+            push();
+            translate(pos.x, pos.y-(this.h/2));
+            rotate(angle);
+            //rect(0,0,this.w, this.h);
+            imageMode(CENTER);
+            image(this.img, 0, 0, this.w*1.5, this.w);
+            pop();
+        }
     }
 }
 
@@ -166,13 +178,14 @@ var game_player = new Player(pSpawn_x, pSpawn_y);
 function setup() {
     createCanvas(xbound, ybound);
     rectMode(CENTER);
+    blendMode(BLEND);
 
     // BUILDS THE MAP GEOMETRY, Main difference between each page
     game_phys_objects.push(
-    new Platform(xbound/2, ybound/2, xbound/2), 
-    new Platform(xbound*3/4, ybound*3/4, xbound/4),
-    new Platform(xbound/4, ybound/4, xbound/2),
-    new Platform(xbound/2, ybound+30, xbound, 60),// bottom ground
+    new Platform(cloud_platform1, xbound/2, ybound/2, xbound/2), 
+    new Platform(cloud_platform3, xbound*3/4, ybound*3/4, xbound/4),
+    new Platform(cloud_platform2, xbound/4, ybound/4, xbound/2),
+    new Platform(null, xbound/2, ybound+30, xbound, 60),// bottom ground
     );
 
 
