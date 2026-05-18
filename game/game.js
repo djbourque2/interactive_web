@@ -18,7 +18,8 @@ Runner.run(runner,engine);
 var xbound = 750,
 ybound = 750;
 
-//player dimensions
+//player parameters
+var game_player;
 var pWidth = 60;
 var pHeight = 60;
 var pJump_Value = 23;
@@ -28,9 +29,19 @@ var pSpawn_y = 650;
 var game_phys_objects = [];
 var ground_collision_list = [];
 
+var background_img;
+
+//img loading
+function preload(){
+    background_img = loadImage('../img/interactive_game_assets_background.png');
+    var player;
+    var platform;
+}
+
 class Player {
     constructor(xSpawn, ySpawn){
-        this.body = Bodies.rectangle(xSpawn, ySpawn, pWidth, pHeight, {inertia: Infinity});
+        this.body = Bodies.rectangle(xSpawn, ySpawn, pWidth, pHeight, {/*inertia: Infinity*/});
+        this.body.friction = 0;
         Composite.add(engine.world, this.body);
         this.jump_time = 0;
     }
@@ -78,14 +89,18 @@ class Player {
         push();
         translate(pos.x, pos.y);
         rotate(angle);
+
+        //debug
+        /*
         if (this.jump_time >= -1){
             fill(color(255,0,0));
         }
+        */
+
         rect(0, 0, pWidth, pHeight);
         pop();
     }
 }
-var game_player = new Player(pSpawn_x, pSpawn_y);
 
 class Platform {
     constructor(x, y, w, h = 60){
@@ -115,13 +130,11 @@ class Platform {
     }
 }
 
-// BUILDS THE MAP GEOMETRY
-game_phys_objects.push(
-    new Platform(xbound/2, ybound/2, xbound/2), 
-    new Platform(xbound*3/4, ybound*3/4, xbound/4),
-    new Platform(xbound/4, ybound/4, xbound/2),
-    new Platform(xbound/2, ybound+30, xbound, 60),// bottom ground
-);
+class Collectible {
+    constructor() {
+
+    }
+}
 
 /*tests
 class Box {
@@ -148,15 +161,21 @@ function mouseDragged() {
     game_phys_objects.push(new Box(mouseX, mouseY, 20,20));
 }*/
 
+var game_player = new Player(pSpawn_x, pSpawn_y);
+
 function setup() {
     createCanvas(xbound, ybound);
     rectMode(CENTER);
-    //create all objects
-    //create world
-    //add all bodies to the world
-    //runner
 
-    //test first
+    // BUILDS THE MAP GEOMETRY, Main difference between each page
+    game_phys_objects.push(
+    new Platform(xbound/2, ybound/2, xbound/2), 
+    new Platform(xbound*3/4, ybound*3/4, xbound/4),
+    new Platform(xbound/4, ybound/4, xbound/2),
+    new Platform(xbound/2, ybound+30, xbound, 60),// bottom ground
+    );
+
+
     var leftwall = Bodies.rectangle(0, 0, 20, 1500, { isStatic: true }); //map bounds
     var rightwall = Bodies.rectangle(xbound, 0, 20, 1500, { isStatic: true });
     Composite.add(engine.world, [leftwall, rightwall]);
@@ -165,7 +184,7 @@ function setup() {
 }
 
 function draw(){
-    background(51);
+    background(background_img, 255);
     for (let i = 0; i < game_phys_objects.length; i++) {//showing all the objects in game_phys_objects
         game_phys_objects[i].show();
     }
