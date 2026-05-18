@@ -37,8 +37,8 @@ var cloud_platform3;
 
 //img loading
 function preload(){
+    //player_sprite = loadImage('../img/TEMP.png');
     background_img = loadImage('../img/interactive_game_assets_background.png');
-    var player;
     cloud_platform1 = loadImage('../img/interactive_game_assets_cloud1.png');
     cloud_platform2 = loadImage('../img/interactive_game_assets_cloud2.png');
     cloud_platform3 = loadImage('../img/interactive_game_assets_cloud3.png');
@@ -104,6 +104,8 @@ class Player {
         */
 
         rect(0, 0, pWidth, pHeight);
+        //imageMode(CENTER);
+        //image(this.img, 0, 0, this.pWidth, this.pHeight);
         pop();
     }
 }
