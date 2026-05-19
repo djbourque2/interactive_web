@@ -3,10 +3,13 @@ var Engine = Matter.Engine,
     Runner = Matter.Runner,
     Bodies = Matter.Bodies,
     Body = Matter.Body,
+    Events = Matter.Events,
     Vector = Matter.Vector,
     Collision = Matter.Collision,
+    Constraint = Matter.Constraint,
     Detector = Matter.Detector,
     Query = Matter.Query,
+    Sleeping = Matter.Sleeping,
 Composite = Matter.Composite;
 
 //matter engine
@@ -26,6 +29,12 @@ var pJump_Value = 23;
 var pSpawn_x = 200;
 var pSpawn_y = 650;
 
+//collectable parameters
+var cWidth = 60;
+var cHeight = 60;
+var cSpawn_x = 100;
+var cSpawn_y = 100;
+
 var game_phys_objects = [];
 var ground_collision_list = [];
 
@@ -35,13 +44,50 @@ var cloud_platform1;
 var cloud_platform2;
 var cloud_platform3;
 
+var cSprite1;
+var cSprite2;
+var cSprite3;
+
+var spring1;
+var spring2;
+var spring3;
+
+/*tests
+class Box {
+    constructor(x, y, w, h){
+    this.body = Bodies.rectangle(x, y, w, h);
+    this.w = w;
+    this.h = h;
+    Composite.add(engine.world, this.body);
+    }
+    show(){
+        var pos = this.body.position;
+        var angle = this.body.angle;
+
+        push();
+        translate(pos.x, pos.y);
+        rotate(angle);
+        rect(0, 0, this.w, this.h);
+        pop();
+    }
+
+}
+
+function mouseDragged() {
+    game_phys_objects.push(new Box(mouseX, mouseY, 20,20));
+}*/
+
 //img loading
 function preload(){
-    //player_sprite = loadImage('../img/TEMP.png');
+    player_sprite = loadImage('../img/interactive_game_assets_player.png');
     background_img = loadImage('../img/interactive_game_assets_background.png');
     cloud_platform1 = loadImage('../img/interactive_game_assets_cloud1.png');
     cloud_platform2 = loadImage('../img/interactive_game_assets_cloud2.png');
     cloud_platform3 = loadImage('../img/interactive_game_assets_cloud3.png');
+
+    cSprite1 = loadImage('../img/interactive_game_assets_collectible1.png');
+    cSprite2 = loadImage('../img/interactive_game_assets_collectible2.png');
+    cSprite3 = loadImage('../img/interactive_game_assets_collectible3.png');
 }
 
 class Player {
@@ -50,6 +96,7 @@ class Player {
         this.body.friction = 0;
         Composite.add(engine.world, this.body);
         this.jump_time = 0;
+        this.img = player_sprite;
     }
     movement(){
         let pos = this.body.position;
@@ -90,8 +137,8 @@ class Player {
     }
     show(){
         this.movement();
-        var pos = this.body.position;
-        var angle = this.body.angle = 0;
+        let pos = this.body.position;
+        let angle = this.body.angle;
         push();
         translate(pos.x, pos.y);
         rotate(angle);
@@ -103,10 +150,74 @@ class Player {
         }
         */
 
-        rect(0, 0, pWidth, pHeight);
-        //imageMode(CENTER);
-        //image(this.img, 0, 0, this.pWidth, this.pHeight);
+        //rect(0, 0, pWidth, pHeight);
+        imageMode(CENTER);
+        image(this.img, 0, 0, pWidth, pHeight);
         pop();
+    }
+}
+
+class Collectible {
+    constructor(xSpawn, ySpawn, img) {
+        this.xSpawn = xSpawn;
+        this.ySpawn = ySpawn;
+        this.img = img;
+        this.w = cWidth;
+        this.h = cHeight;
+
+        this.body = Bodies.rectangle(xSpawn, ySpawn, cWidth, cHeight, {mass: 0});
+        Body.setAngularSpeed(this.body, random(-0.05,0.05));
+        Body.setVelocity(this.body, Vector.create(random(-0.25,0.25),random(-0.25,0.25)));
+
+        Events.on(engine, "beforeUpdate", ()=>{//neutralizes gravity
+            Body.applyForce(this.body, this.body.position, { x: 0, y: -this.body.mass * engine.gravity.y * engine.gravity.scale });
+        });
+
+        Composite.add(engine.world, this.body);
+    }
+    show(){
+        let pos = this.body.position;
+        let angle = this.body.angle;
+
+        push();
+        translate(pos.x, pos.y);
+        rotate(angle);
+
+        //rect(0, 0, cWidth, cHeight);
+        imageMode(CENTER);
+        image(this.img, 0, 0, this.w, this.h);
+        pop();
+    }
+}
+
+class Link {
+    constructor(bodyA, bodyB, isActive = false){
+        this.bodyA = bodyA;
+        this.pointA = bodyA.position;
+        this.bodyB = bodyB;
+        this.isActive = isActive;
+        this.stiffness = 0.001;
+
+        this.constraint;
+
+        Events.on(engine, "beforeUpdate", ()=>{//neutralizes force on bodyA
+            if (this.isActive) {
+                this.pointA = bodyA.position;
+            }
+        });
+    }
+    check(){
+        if (!this.isActive){
+            this.constraint = Constraint.create({
+                pointA: this.pointA,
+                bodyB: this.bodyB,
+                length: 120,
+                stiffness: this.stiffness
+            });
+            Composite.add(engine.world, this.constraint);
+            this.isActive = true;
+            console.log(this.constraint);
+        }
     }
 }
 
@@ -144,43 +255,15 @@ class Platform {
     }
 }
 
-class Collectible {
-    constructor() {
-
-    }
-}
-
-/*tests
-class Box {
-    constructor(x, y, w, h){
-    this.body = Bodies.rectangle(x, y, w, h);
-    this.w = w;
-    this.h = h;
-    Composite.add(engine.world, this.body);
-    }
-    show(){
-        var pos = this.body.position;
-        var angle = this.body.angle;
-
-        push();
-        translate(pos.x, pos.y);
-        rotate(angle);
-        rect(0, 0, this.w, this.h);
-        pop();
-    }
-
-}
-
-function mouseDragged() {
-    game_phys_objects.push(new Box(mouseX, mouseY, 20,20));
-}*/
-
-var game_player = new Player(pSpawn_x, pSpawn_y);
-
 function setup() {
     createCanvas(xbound, ybound);
     rectMode(CENTER);
     blendMode(BLEND);
+
+    game_player = new Player(pSpawn_x, pSpawn_y);
+    collectable1 = new Collectible(cSpawn_x, cSpawn_y, cSprite1);
+    spring1 = new Link(game_player.body, collectable1.body);
+
 
     // BUILDS THE MAP GEOMETRY, Main difference between each page
     game_phys_objects.push(
@@ -191,11 +274,10 @@ function setup() {
     );
 
 
-    var leftwall = Bodies.rectangle(0, 0, 20, 1500, { isStatic: true }); //map bounds
-    var rightwall = Bodies.rectangle(xbound, 0, 20, 1500, { isStatic: true });
-    Composite.add(engine.world, [leftwall, rightwall]);
-
-
+    var leftwall = Bodies.rectangle(0, ybound/2, 20, ybound, { isStatic: true }); //map bounds
+    var rightwall = Bodies.rectangle(xbound, ybound/2, 20, ybound, { isStatic: true });
+    var topwall = Bodies.rectangle(xbound/2, 0, xbound, 20, { isStatic: true });
+    Composite.add(engine.world, [leftwall, rightwall, topwall]);
 }
 
 function draw(){
@@ -204,4 +286,8 @@ function draw(){
         game_phys_objects[i].show();
     }
     game_player.show();
+    collectable1.show();
+    if (Collision.collides(game_player.body, collectable1.body) != null){
+        spring1.check();
+    }
 }
