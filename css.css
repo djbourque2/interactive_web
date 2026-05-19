@@ -1,6 +1,7 @@
 * {
     margin: 0px;
-    color: #6600FF
+    color: cyan;
+    font-family: "Lilita One", sans-serif;
 }
 
 body {
@@ -13,4 +14,10 @@ body {
 
 #reappear {
     display: none;
+}
+
+.lilita-one-regular {
+  font-family: "Lilita One", sans-serif;
+  font-weight: 400;
+  font-style: normal;
 }
