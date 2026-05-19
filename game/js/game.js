@@ -211,6 +211,11 @@ class Link {
                 });
                 Composite.add(engine.world, this.constraint);
                 
+                this.bodyB.collisionFilter = {//deactivates collisions with the player
+                    'group': 2,
+                    'mask': 2
+                }
+
                 this.isActive = true;
             }
 
@@ -241,8 +246,6 @@ class Platform {
         Composite.add(engine.world, this.body);
         Composite.add(engine.world, this.body2);
         ground_collision_list.push(this.body2);
-        //game_detector.bodies.push(this.body2);
-
 
     }
     show(){
@@ -253,14 +256,13 @@ class Platform {
             push();
             translate(pos.x, pos.y-(this.h/2));
             rotate(angle);
-            //rect(0,0,this.w, this.h);
             imageMode(CENTER);
             image(this.img, 0, 0, this.w*1.5, this.w);
             pop();
         }
     }
 }
-
+/*
 function setup() {
     createCanvas(xbound, ybound);
     rectMode(CENTER);
@@ -281,8 +283,8 @@ function setup() {
     new Platform(null, xbound/2, ybound+30, xbound, 60),// bottom ground
     );
 
-
-    var leftwall = Bodies.rectangle(0, ybound/2, 20, ybound, { isStatic: true }); //map bounds
+    //map bounds
+    var leftwall = Bodies.rectangle(0, ybound/2, 20, ybound, { isStatic: true });
     var rightwall = Bodies.rectangle(xbound, ybound/2, 20, ybound, { isStatic: true });
     var topwall = Bodies.rectangle(xbound/2, 0, xbound, 20, { isStatic: true });
     Composite.add(engine.world, [leftwall, rightwall, topwall]);
@@ -296,4 +298,4 @@ function draw(){
     game_player.show();
     collectable1.show();
     //collectable2.show();
-}
+}*/
