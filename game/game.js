@@ -105,15 +105,15 @@ class Player {
             }
         }
 
-        if (keyIsDown(LEFT_ARROW) && !keyIsDown(RIGHT_ARROW)){
+        if ((keyIsDown(LEFT_ARROW)||keyIsDown(65)) && !(keyIsDown(RIGHT_ARROW)||keyIsDown(68))){
             Body.setVelocity(this.body, Vector.create(-5, Body.getVelocity(this.body).y));
-        } else if (keyIsDown(RIGHT_ARROW) && !keyIsDown(LEFT_ARROW)){
+        } else if ((keyIsDown(RIGHT_ARROW)||keyIsDown(68)) && !(keyIsDown(LEFT_ARROW)||keyIsDown(65))){
             Body.setVelocity(this.body, Vector.create(5, Body.getVelocity(this.body).y));
         } else {
             Body.setVelocity(this.body, Vector.create(Body.getVelocity(this.body).x * 0.9, Body.getVelocity(this.body).y))
         }
         
-        if (keyIsDown(UP_ARROW) && (this.jump_time > 0)){
+        if ((keyIsDown(UP_ARROW)||keyIsDown(87)) && (this.jump_time > 0)){
             if ((this.jump_time != pJump_Value) && (Body.getVelocity(this.body).y == 0)){
                 this.jump_time = 0;
             }
