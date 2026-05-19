@@ -5,4 +5,12 @@
 
 body {
     background-color: #00000C;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#reappear {
+    display: none;
 }

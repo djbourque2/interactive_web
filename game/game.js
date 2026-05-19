@@ -30,6 +30,9 @@ var pSpawn_x = 200;
 var pSpawn_y = 650;
 
 //collectable parameters ----------------------------------------
+var collectable1;
+var collectable2;
+var collectable3;
 var cWidth = 60;
 var cHeight = 60;
 var cSpawn_x = 100;
@@ -48,12 +51,13 @@ var cloud_platform1;
 var cloud_platform2;
 var cloud_platform3;
 
+
 //collectible sprites
 var cSprite1;
 var cSprite2;
 var cSprite3;
 
-// constrait objects
+// constraint objects
 var spring1;
 var spring2;
 var spring3;
@@ -195,19 +199,25 @@ class Link {
             this.constraint = Constraint.create({
                 pointA: this.pointA,
                 bodyB: this.bodyB,
-                length: 60,
-                stiffness: this.stiffness
+                length: 120,
+                stiffness: this.stiffness,
+                dampening: 1
             });
             Composite.add(engine.world, this.constraint);
+            this.bodyB.collisionFilter = {//deactivates collisions with the player
+                'group': 2,
+                'mask': 2
+            }
         }
 
         Events.on(engine, "beforeUpdate", ()=>{
-            if ((Collision.collides(this.bodyA, this.bodyB) != null) && (!this.isActive)){
+            if ((Collision.collides(game_player.body, this.bodyB) != null) && (!this.isActive)){//fix this
                 this.constraint = Constraint.create({
                     pointA: this.pointA,
                     bodyB: this.bodyB,
                     length: 120,
-                    stiffness: this.stiffness
+                    stiffness: this.stiffness,
+                    dampening: 1
                 });
                 Composite.add(engine.world, this.constraint);
                 
